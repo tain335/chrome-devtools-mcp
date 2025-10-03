@@ -10,7 +10,7 @@ import type z from 'zod';
 import type {TraceResult} from '../trace-processing/parse.js';
 
 import type {ToolCategories} from './categories.js';
-
+import type {SnapshotElementResult } from './element_snapshot.js';
 export interface ToolDefinition<Schema extends z.ZodRawShape = z.ZodRawShape> {
   name: string;
   description: string;
@@ -56,6 +56,7 @@ export interface Response {
  * Only add methods required by tools/*.
  */
 export type Context = Readonly<{
+  getNextElementSnapshotId(): number;
   isRunningPerformanceTrace(): boolean;
   setIsRunningPerformanceTrace(x: boolean): void;
   recordedTraces(): TraceResult[];
@@ -75,6 +76,7 @@ export type Context = Readonly<{
     mimeType: 'image/png' | 'image/jpeg',
   ): Promise<{filename: string}>;
   waitForEventsAfterAction(action: () => Promise<unknown>): Promise<void>;
+  setElementSnapshot(snapshotId: number, result: SnapshotElementResult[]): Promise<void>;
 }>;
 
 export function defineTool<Schema extends z.ZodRawShape>(

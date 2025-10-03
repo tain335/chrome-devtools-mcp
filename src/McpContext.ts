@@ -20,6 +20,7 @@ import type {
 } from 'puppeteer-core';
 
 import {NetworkCollector, PageCollector} from './PageCollector.js';
+import type {SnapshotElementResult} from './tools/element_snapshot.js';
 import {listPages} from './tools/pages.js';
 import {CLOSE_PAGE_ERROR} from './tools/ToolDefinition.js';
 import type {Context} from './tools/ToolDefinition.js';
@@ -35,6 +36,12 @@ export interface TextSnapshot {
   root: TextSnapshotNode;
   idToNode: Map<string, TextSnapshotNode>;
   snapshotId: string;
+}
+
+export interface ElementSnapshot {
+ idToElement: Map<string, SnapshotElementResult>;
+ elementResults: SnapshotElementResult[];
+ snapshotId: string;
 }
 
 const DEFAULT_TIMEOUT = 5_000;
@@ -66,6 +73,8 @@ export class McpContext implements Context {
   #selectedPageIdx = 0;
   // The most recent snapshot.
   #textSnapshot: TextSnapshot | null = null;
+
+  #elementSnapshot: ElementSnapshot | null = null;
   #networkCollector: NetworkCollector;
   #consoleCollector: PageCollector<ConsoleMessage | Error>;
 
@@ -75,6 +84,7 @@ export class McpContext implements Context {
   #dialog?: Dialog;
 
   #nextSnapshotId = 1;
+  #nextElementSnapshotId = 1;
   #traceResults: TraceResult[] = [];
 
   private constructor(browser: Browser, logger: Debugger) {
@@ -101,6 +111,12 @@ export class McpContext implements Context {
         });
       },
     );
+
+    this.#elementSnapshot = {
+      idToElement: new Map(),
+      snapshotId: '0',
+      elementResults: []
+    };
   }
 
   async #init() {
@@ -260,9 +276,26 @@ export class McpContext implements Context {
   }
 
   async getElementByUid(uid: string): Promise<ElementHandle<Element>> {
+    if (!this.#elementSnapshot?.idToElement.size && !this.#textSnapshot?.idToNode.size) {
+      throw new Error('No snapshot found. Use browser_snapshot to capture one');
+    }
+
+    if(uid.startsWith('#')) {
+      const [snapshotId] = uid.replace('#', '').split('_');
+      if (this.#elementSnapshot?.snapshotId !== snapshotId) {
+        throw new Error('This uid is coming from a stale snapshot. Call take_element_snapshot to get a fresh snapshot.');
+      }
+      const e = this.#elementSnapshot.idToElement.get(uid);
+      if(!e) {
+        throw new Error('No such element found in the element snapshot');
+      }
+      return e.element as ElementHandle<Element>;
+    }
+   
     if (!this.#textSnapshot?.idToNode.size) {
       throw new Error('No snapshot found. Use browser_snapshot to capture one');
     }
+
     const [snapshotId] = uid.split('_');
 
     if (this.#textSnapshot.snapshotId !== snapshotId) {
@@ -292,6 +325,10 @@ export class McpContext implements Context {
 
   getPages(): Page[] {
     return this.#pages;
+  }
+
+  getNextElementSnapshotId(): number {
+    return this.#nextElementSnapshotId++;
   }
 
   /**
@@ -331,6 +368,10 @@ export class McpContext implements Context {
 
   getTextSnapshot(): TextSnapshot | null {
     return this.#textSnapshot;
+  }
+
+  getElementSnapshot(): ElementSnapshot | null {
+    return this.#elementSnapshot;
   }
 
   async saveTemporaryFile(
@@ -381,5 +422,18 @@ export class McpContext implements Context {
       networkMultiplier,
     );
     return waitForHelper.waitForEventsAfterAction(action);
+  }
+
+  async setElementSnapshot(snapshotId: number, result: SnapshotElementResult[]): Promise<void> {
+    if(this.#elementSnapshot) {
+      for(const e of this.#elementSnapshot.idToElement.values()) {
+        await (e.element as ElementHandle).dispose();
+      }
+    }
+    this.#elementSnapshot = {
+      idToElement: new Map(result.map((e) => [e.uid, e])),
+      snapshotId: snapshotId.toString(),
+      elementResults: result
+    };
   }
 }

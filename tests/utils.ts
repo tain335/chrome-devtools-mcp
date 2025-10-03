@@ -16,7 +16,7 @@ let browser: Browser | undefined;
 
 export async function withBrowser(
   cb: (response: McpResponse, context: McpContext) => Promise<void>,
-  options: {debug?: boolean} = {},
+  options: {debug?: boolean, url?: string} = {},
 ) {
   const {debug = false} = options;
   if (!browser) {
@@ -24,9 +24,13 @@ export async function withBrowser(
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
       headless: !debug,
       defaultViewport: null,
+      args: ["--minimum-font-size=0"]
     });
   }
   const newPage = await browser.newPage();
+  if (options.url) {
+    await newPage.goto(options.url, {waitUntil: 'networkidle0'});
+  } 
   // Close other pages.
   await Promise.all(
     (await browser.pages()).map(async page => {

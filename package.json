@@ -18,6 +18,7 @@
     "test:only": "npm run build && node --require ./build/tests/setup.js --no-warnings=ExperimentalWarning --test-reporter spec --test-force-exit --test --test-only \"build/tests/**/*.test.js\"",
     "test:only:no-build": "node --require ./build/tests/setup.js --no-warnings=ExperimentalWarning --test-reporter spec --test-force-exit --test --test-only \"build/tests/**/*.test.js\"",
     "test:update-snapshots": "npm run build && node --require ./build/tests/setup.js --no-warnings=ExperimentalWarning --test-force-exit --test --test-update-snapshots \"build/tests/**/*.test.js\"",
+    "test-ts:only": "node --loader ts-node/esm --test",
     "prepare": "node --experimental-strip-types scripts/prepare.ts",
     "sync-server-json-version": "node  --experimental-strip-types scripts/sync-server-json-version.ts && npm run format"
   },
@@ -39,7 +40,8 @@
     "@modelcontextprotocol/sdk": "1.18.1",
     "debug": "4.4.3",
     "puppeteer-core": "24.22.3",
-    "yargs": "18.0.0"
+    "yargs": "18.0.0",
+    "zod": "3.24.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
@@ -53,14 +55,15 @@
     "@typescript-eslint/parser": "^8.43.0",
     "chrome-devtools-frontend": "1.0.1520535",
     "eslint": "^9.35.0",
-    "eslint-plugin-import": "^2.32.0",
     "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.32.0",
     "globals": "^16.4.0",
     "prettier": "^3.6.2",
     "puppeteer": "24.22.3",
     "sinon": "^21.0.0",
-    "typescript-eslint": "^8.43.0",
-    "typescript": "^5.9.2"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.43.0"
   },
   "engines": {
     "node": ">=22.12.0"
