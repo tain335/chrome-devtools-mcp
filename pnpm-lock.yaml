@@ -9,8 +9,11 @@ importers:
   .:
     dependencies:
       '@modelcontextprotocol/sdk':
-        specifier: 1.18.1
-        version: 1.18.1
+        specifier: 1.18.2
+        version: 1.18.2
+      core-js:
+        specifier: 3.45.1
+        version: 3.45.1
       debug:
         specifier: 4.4.3
         version: 4.4.3
@@ -52,8 +55,8 @@ importers:
         specifier: ^8.43.0
         version: 8.44.1(eslint@9.36.0)(typescript@5.9.2)
       chrome-devtools-frontend:
-        specifier: 1.0.1520535
-        version: 1.0.1520535
+        specifier: 1.0.1521880
+        version: 1.0.1521880
       eslint:
         specifier: ^9.35.0
         version: 9.36.0
@@ -172,8 +175,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@modelcontextprotocol/sdk@1.18.1':
-    resolution: {integrity: sha512-d//GE8/Yh7aC3e7p+kZG8JqqEAwwDUmAfvH1quogtbk+ksS6E0RR6toKKESPYYZVre0meqkJb27zb+dhqE9Sgw==}
+  '@modelcontextprotocol/sdk@1.18.2':
+    resolution: {integrity: sha512-beedclIvFcCnPrYgHsylqiYJVJ/CI47Vyc4tY8no1/Li/O8U4BTlJfy6ZwxkYwx+Mx10nrgwSVrA7VBbhh4slg==}
     engines: {node: '>=18'}
 
   '@napi-rs/wasm-runtime@0.2.12':
@@ -605,8 +608,8 @@ packages:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
 
-  chrome-devtools-frontend@1.0.1520535:
-    resolution: {integrity: sha512-kCjiu7ZQ3vLNQ5hmmQZRwwpGpQykJECWuDUc3nKjXOOsMEWgJJh+3OhG6vOrtEG5BxL9jWZoBvf1GG8ddNpkeg==}
+  chrome-devtools-frontend@1.0.1521880:
+    resolution: {integrity: sha512-43m+y3kaBebVPu2Ja9u2GsvPgWvpn10jF4l3zr8ElhnxRRx1DOi58PXJ6EzxbjbrS5uzTZ0sa0cKNov/KtV6mQ==}
 
   chromium-bidi@9.1.0:
     resolution: {integrity: sha512-rlUzQ4WzIAWdIbY/viPShhZU2n21CxDUgazXVbw4Hu1MwaeUSEksSeM6DqPgpRjCLXRk702AVRxJxoOz0dw4OA==}
@@ -646,6 +649,9 @@ packages:
   cookie@0.7.2:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
+
+  core-js@3.45.1:
+    resolution: {integrity: sha512-L4NPsJlCfZsPeXukyzHFlg/i7IIVwHSItR0wg0FLNqYClJ4MQYTYLbC7EkjKYRLZF2iof2MUgN0EGy7MdQFChg==}
 
   cors@2.8.5:
     resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
@@ -2031,7 +2037,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@modelcontextprotocol/sdk@1.18.1':
+  '@modelcontextprotocol/sdk@1.18.2':
     dependencies:
       ajv: 6.12.6
       content-type: 1.0.5
@@ -2506,7 +2512,7 @@ snapshots:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  chrome-devtools-frontend@1.0.1520535: {}
+  chrome-devtools-frontend@1.0.1521880: {}
 
   chromium-bidi@9.1.0(devtools-protocol@0.0.1495869):
     dependencies:
@@ -2543,6 +2549,8 @@ snapshots:
   cookie-signature@1.2.2: {}
 
   cookie@0.7.2: {}
+
+  core-js@3.45.1: {}
 
   cors@2.8.5:
     dependencies:
