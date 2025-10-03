@@ -22,6 +22,7 @@ import type {
 import {NetworkCollector, PageCollector} from './PageCollector.js';
 import type {SnapshotElementResult} from './tools/element_snapshot.js';
 import {listPages} from './tools/pages.js';
+import {takeSnapshot} from './tools/snapshot.js';
 import {CLOSE_PAGE_ERROR} from './tools/ToolDefinition.js';
 import type {Context} from './tools/ToolDefinition.js';
 import type {TraceResult} from './trace-processing/parse.js';
@@ -62,6 +63,18 @@ function getNetworkMultiplierFromString(condition: string | null): number {
       return 10;
   }
   return 1;
+}
+
+function getExtensionFromMimeType(mimeType: string) {
+  switch (mimeType) {
+    case 'image/png':
+      return 'png';
+    case 'image/jpeg':
+      return 'jpeg';
+    case 'image/webp':
+      return 'webp';
+  }
+  throw new Error(`No mapping for Mime type ${mimeType}.`);
 }
 
 export class McpContext implements Context {
@@ -293,7 +306,9 @@ export class McpContext implements Context {
     }
    
     if (!this.#textSnapshot?.idToNode.size) {
-      throw new Error('No snapshot found. Use browser_snapshot to capture one');
+      throw new Error(
+        `No snapshot found. Use ${takeSnapshot.name} to capture one.`,
+      );
     }
 
     const [snapshotId] = uid.split('_');
@@ -336,7 +351,9 @@ export class McpContext implements Context {
    */
   async createTextSnapshot(): Promise<void> {
     const page = this.getSelectedPage();
-    const rootNode = await page.accessibility.snapshot();
+    const rootNode = await page.accessibility.snapshot({
+      includeIframes: true,
+    });
     if (!rootNode) {
       return;
     }
@@ -376,21 +393,35 @@ export class McpContext implements Context {
 
   async saveTemporaryFile(
     data: Uint8Array<ArrayBufferLike>,
-    mimeType: 'image/png' | 'image/jpeg',
+    mimeType: 'image/png' | 'image/jpeg' | 'image/webp',
   ): Promise<{filename: string}> {
     try {
       const dir = await fs.mkdtemp(
         path.join(os.tmpdir(), 'chrome-devtools-mcp-'),
       );
+
       const filename = path.join(
         dir,
-        mimeType == 'image/png' ? `screenshot.png` : 'screenshot.jpg',
+        `screenshot.${getExtensionFromMimeType(mimeType)}`,
       );
-      await fs.writeFile(path.join(dir, `screenshot.png`), data);
+      await fs.writeFile(filename, data);
       return {filename};
     } catch (err) {
       this.logger(err);
-      throw new Error('Could not save a screenshot to a file');
+      throw new Error('Could not save a screenshot to a file', {cause: err});
+    }
+  }
+  async saveFile(
+    data: Uint8Array<ArrayBufferLike>,
+    filename: string,
+  ): Promise<{filename: string}> {
+    try {
+      const filePath = path.resolve(filename);
+      await fs.writeFile(filePath, data);
+      return {filename};
+    } catch (err) {
+      this.logger(err);
+      throw new Error('Could not save a screenshot to a file', {cause: err});
     }
   }
 

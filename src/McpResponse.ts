@@ -17,6 +17,7 @@ import {
 } from './formatters/networkFormatter.js';
 import {formatA11ySnapshot} from './formatters/snapshotFormatter.js';
 import type {McpContext} from './McpContext.js';
+import {handleDialog} from './tools/pages.js';
 import type {ImageContentData, Response} from './tools/ToolDefinition.js';
 import {paginate, type PaginationOptions} from './utils/pagination.js';
 
@@ -153,7 +154,7 @@ export class McpResponse implements Response {
       response.push(`## Network emulation`);
       response.push(`Emulating: ${networkConditions}`);
       response.push(
-        `Navigation timeout set to ${context.getNavigationTimeout()} ms`,
+        `Default navigation timeout set to ${context.getNavigationTimeout()} ms`,
       );
     }
 
@@ -167,7 +168,7 @@ export class McpResponse implements Response {
     if (dialog) {
       response.push(`# Open dialog
 ${dialog.type()}: ${dialog.message()} (default value: ${dialog.message()}).
-Call browser_handle_dialog to handle it before continuing.`);
+Call ${handleDialog.name} to handle it before continuing.`);
     }
 
     if (this.#includePages) {
@@ -209,30 +210,12 @@ Call browser_handle_dialog to handle it before continuing.`);
 
       response.push('## Network requests');
       if (requests.length) {
-        const paginationResult = paginate(
+        const data = this.#dataWithPagination(
           requests,
           this.#networkRequestsOptions.pagination,
         );
-        if (paginationResult.invalidPage) {
-          response.push('Invalid page number provided. Showing first page.');
-        }
-
-        const {startIndex, endIndex, currentPage, totalPages} =
-          paginationResult;
-        response.push(
-          `Showing ${startIndex + 1}-${endIndex} of ${requests.length} (Page ${currentPage + 1} of ${totalPages}).`,
-        );
-
-        if (this.#networkRequestsOptions.pagination) {
-          if (paginationResult.hasNextPage) {
-            response.push(`Next page: ${currentPage + 1}`);
-          }
-          if (paginationResult.hasPreviousPage) {
-            response.push(`Previous page: ${currentPage - 1}`);
-          }
-        }
-
-        for (const request of paginationResult.items) {
+        response.push(...data.info);
+        for (const request of data.items) {
           response.push(getShortDescriptionForRequest(request));
         }
       } else {
@@ -261,6 +244,32 @@ Call browser_handle_dialog to handle it before continuing.`);
     });
 
     return [text, ...images];
+  }
+
+  #dataWithPagination<T>(data: T[], pagination?: PaginationOptions) {
+    const response = [];
+    const paginationResult = paginate<T>(data, pagination);
+    if (paginationResult.invalidPage) {
+      response.push('Invalid page number provided. Showing first page.');
+    }
+
+    const {startIndex, endIndex, currentPage, totalPages} = paginationResult;
+    response.push(
+      `Showing ${startIndex + 1}-${endIndex} of ${data.length} (Page ${currentPage + 1} of ${totalPages}).`,
+    );
+    if (pagination) {
+      if (paginationResult.hasNextPage) {
+        response.push(`Next page: ${currentPage + 1}`);
+      }
+      if (paginationResult.hasPreviousPage) {
+        response.push(`Previous page: ${currentPage - 1}`);
+      }
+    }
+
+    return {
+      info: response,
+      items: paginationResult.items,
+    };
   }
 
   #getIncludeNetworkRequestsData(context: McpContext): string[] {
